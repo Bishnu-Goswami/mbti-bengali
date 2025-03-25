@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBTI ব্যক্তিত্ব পরীক্ষা</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .question { margin-bottom: 15px; }
+        .hidden { display: none; }
+        button { padding: 10px; margin-top: 10px; cursor: pointer; }
+        #description { margin-top: 20px; padding: 15px; background: #f4f4f4; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+    <h2>MBTI ব্যক্তিত্ব পরীক্ষা</h2>
+    <p>প্রশ্নগুলোর উত্তর দিন এবং আপনার ব্যক্তিত্ব টাইপ খুঁজে বের করুন।</p>
+
+    <form id="mbtiForm">
+        <div id="questions"></div>
+        <button type="button" onclick="calculateMBTI()">ফলাফল দেখান</button>
+    </form>
+
+    <h3 id="result" class="hidden"></h3>
+    <div id="description" class="hidden"></div>
+
+    <script>
+        const questionsData = [
+            { q: "আপনি কি বড় দলে থাকতে পছন্দ করেন নাকি একা সময় কাটাতে ভালোবাসেন?", a1: "বড় দল (E)", a2: "একাকী (I)", type1: "E", type2: "I" },
+            { q: "আপনি কি বাস্তবসম্মত নাকি কল্পনাপ্রবণ?", a1: "বাস্তববাদী (S)", a2: "কল্পনাপ্রবণ (N)", type1: "S", type2: "N" },
+            { q: "আপনি কি সিদ্ধান্ত নেয়ার সময় যুক্তি ব্যবহার করেন নাকি আবেগ?", a1: "যুক্তি (T)", a2: "আবেগ (F)", type1: "T", type2: "F" },
+            { q: "আপনি কি পরিকল্পনা করে কাজ করতে ভালোবাসেন নাকি স্বতঃস্ফূর্ত?", a1: "পরিকল্পনা (J)", a2: "স্বতঃস্ফূর্ত (P)", type1: "J", type2: "P" },
+            { q: "আপনি কি নতুন লোকের সাথে সহজে মিশতে পারেন?", a1: "হ্যাঁ (E)", a2: "না (I)", type1: "E", type2: "I" },
+            { q: "আপনি কি অতীতের অভিজ্ঞতা থেকে বেশি শেখেন নাকি ভবিষ্যতের সম্ভাবনা নিয়ে ভাবেন?", a1: "অতীত (S)", a2: "ভবিষ্যত (N)", type1: "S", type2: "N" },
+            { q: "আপনি কি কঠোর সিদ্ধান্ত নিতে পারেন?", a1: "হ্যাঁ (T)", a2: "না (F)", type1: "T", type2: "F" },
+            { q: "আপনি কি আপনার প্রতিদিনের কাজ পরিকল্পনা করে করেন?", a1: "হ্যাঁ (J)", a2: "না (P)", type1: "J", type2: "P" },
+            { q: "আপনার শক্তি কি সোশ্যাল ইন্টারঅ্যাকশন থেকে আসে নাকি একাকীত্ব থেকে?", a1: "সোশ্যাল (E)", a2: "একাকী (I)", type1: "E", type2: "I" },
+            { q: "আপনি কি বিস্তারিত বিষয়ের দিকে বেশি মনোযোগ দেন নাকি সামগ্রিক ধারণা বোঝার চেষ্টা করেন?", a1: "বিস্তারিত (S)", a2: "সামগ্রিক (N)", type1: "S", type2: "N" },
+            { q: "আপনার জন্য সত্য গুরুত্বপূর্ণ নাকি সম্পর্ক?", a1: "সত্য (T)", a2: "সম্পর্ক (F)", type1: "T", type2: "F" },
+            { q: "আপনি কি সাধারণত নিয়ম মেনে চলেন নাকি নিয়মের বাইরে কাজ করতে পছন্দ করেন?", a1: "নিয়ম মেনে (J)", a2: "নিয়মের বাইরে (P)", type1: "J", type2: "P" },
+            { q: "আপনি কি মানুষকে সহজেই বিশ্বাস করেন নাকি সন্দেহপ্রবণ?", a1: "বিশ্বাস করি (E)", a2: "সন্দেহপ্রবণ (I)", type1: "E", type2: "I" },
+            { q: "আপনি কি বর্তমান সময়ের ব্যাপারে বেশি সচেতন নাকি ভবিষ্যতের চিন্তায় মগ্ন?", a1: "বর্তমান (S)", a2: "ভবিষ্যত (N)", type1: "S", type2: "N" },
+            { q: "আপনার যুক্তিবোধ কি আবেগের চেয়ে বেশি কাজ করে?", a1: "হ্যাঁ (T)", a2: "না (F)", type1: "T", type2: "F" },
+            { q: "আপনি কি শেষ মুহূর্তে কাজ করতে পছন্দ করেন নাকি আগেভাগে প্রস্তুত হন?", a1: "শেষ মুহূর্তে (P)", a2: "আগেভাগে (J)", type1: "P", type2: "J" },
+            { q: "আপনি কি আপনার চিন্তা সহজে প্রকাশ করতে পারেন?", a1: "হ্যাঁ (E)", a2: "না (I)", type1: "E", type2: "I" },
+            { q: "আপনি কি নতুন অভিজ্ঞতা নিতে ভালোবাসেন নাকি পরিচিত পরিবেশ পছন্দ করেন?", a1: "নতুন অভিজ্ঞতা (N)", a2: "পরিচিত পরিবেশ (S)", type1: "N", type2: "S" },
+            { q: "আপনি কি বিতর্ক ও আলোচনায় ভালোবাসেন নাকি সবাইকে খুশি রাখতে চান?", a1: "বিতর্ক (T)", a2: "সবাইকে খুশি (F)", type1: "T", type2: "F" },
+            { q: "আপনার কি জীবনের প্রতিটি ব্যাপার পরিকল্পিত থাকা দরকার নাকি আপনি সহজভাবে নিতে পছন্দ করেন?", a1: "পরিকল্পিত (J)", a2: "সহজভাবে (P)", type1: "J", type2: "P" }
+        ];
+
+        const questionContainer = document.getElementById("questions");
+
+        questionsData.forEach((q, index) => {
+            const div = document.createElement("div");
+            div.className = "question";
+            div.innerHTML = `
+                <p>${index + 1}. ${q.q}</p>
+                <label><input type="radio" name="q${index}" value="${q.type1}"> ${q.a1}</label>
+                <label><input type="radio" name="q${index}" value="${q.type2}"> ${q.a2}</label>
+            `;
+            questionContainer.appendChild(div);
+        });
+
+        function calculateMBTI() {
+            let scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
+
+            document.querySelectorAll('input[type="radio"]:checked').forEach(input => {
+                scores[input.value]++;
+            });
+
+            let mbti = (scores.E > scores.I ? "E" : "I") +
+                       (scores.S > scores.N ? "S" : "N") +
+                       (scores.T > scores.F ? "T" : "F") +
+                       (scores.J > scores.P ? "J" : "P");
+
+            document.getElementById("result").innerText = `আপনার MBTI ব্যক্তিত্ব টাইপ: ${mbti}`;
+            document.getElementById("result").classList.remove("hidden");
+        }
+    </script>
+
+</body>
+</html>
